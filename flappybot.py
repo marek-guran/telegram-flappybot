@@ -10,7 +10,7 @@ TOKEN = 'token'
 
 # Define the initial buttons layout
 main_buttons = [
-    [InlineKeyboardButton("Flappy PEPE", callback_data='flappy_pepe')],
+    [InlineKeyboardButton("Play Flappy PEPE", callback_data='flappy_pepe')],
     [InlineKeyboardButton("Pepecoin.org", url="https://pepecoin.org/"), InlineKeyboardButton("Faucets", callback_data='faucets')],
     [InlineKeyboardButton("Explorers", callback_data='explorers'), InlineKeyboardButton("Community", callback_data='community'), InlineKeyboardButton("Guides", callback_data='guides')]
 ]
@@ -37,7 +37,7 @@ community_buttons = [
 guides_buttons = [
     [InlineKeyboardButton("Pepelum Guides", url="https://pepelum.site/")],
     [InlineKeyboardButton("Wallets", url="https://pepelum.site/?p=wallets"), InlineKeyboardButton("Mining", url="https://pepelum.site/?p=mining")],
-    [InlineKeyboardButton("Get Pepecoin", url="https://pepelum.site/?p=getpepecoin"), InlineKeyboardButton("Tip Bots", url="https://pepelum.site/?p=bots")],
+    [InlineKeyboardButton("Buying Ᵽepecoin", url="https://pepelum.site/?p=getpepecoin"), InlineKeyboardButton("Tip Bots", url="https://pepelum.site/?p=bots")],
     [InlineKeyboardButton("Back", callback_data='main_menu')]
 ]
 
