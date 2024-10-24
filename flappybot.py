@@ -8,44 +8,52 @@ from telegram.error import RetryAfter
 # Define the bot token
 TOKEN = 'token'
 
-# Define the initial buttons layout
-main_buttons = [
-    [InlineKeyboardButton("Play Flappy PEPE", callback_data='flappy_pepe')],
-    [InlineKeyboardButton("Pepecoin.org", url="https://pepecoin.org/"), InlineKeyboardButton("Faucets", callback_data='faucets')],
-    [InlineKeyboardButton("Explorers", callback_data='explorers'), InlineKeyboardButton("Community", callback_data='community'), InlineKeyboardButton("Guides", callback_data='guides')]
-]
+# Helper function to generate buttons with user-specific callback data
+def generate_main_buttons(user_id):
+    return [
+        [InlineKeyboardButton("Play Flappy PEPE", callback_data=f'flappy_pepe_{user_id}')],
+        [InlineKeyboardButton("Pepecoin.org", url="https://pepecoin.org/"), InlineKeyboardButton("Faucets", callback_data=f'faucets_{user_id}')],
+        [InlineKeyboardButton("Explorers", callback_data=f'explorers_{user_id}'), InlineKeyboardButton("Community", callback_data=f'community_{user_id}'), InlineKeyboardButton("Guides", callback_data=f'guides_{user_id}')]
+    ]
 
-# Define the buttons for Explorers
-explorers_buttons = [
-    [InlineKeyboardButton("PepeExplorer", url="https://pepeexplorer.com/"), InlineKeyboardButton("PepeBlocks", url="https://pepeblocks.com/"), InlineKeyboardButton("CoinExplorer", url="https://www.coinexplorer.net/PEP/")],
-    [InlineKeyboardButton("Back", callback_data='main_menu')]
-]
+# Generate user-specific buttons for Explorers
+def generate_explorers_buttons(user_id):
+    return [
+        [InlineKeyboardButton("PepeExplorer", url="https://pepeexplorer.com/"), InlineKeyboardButton("PepeBlocks", url="https://pepeblocks.com/"), InlineKeyboardButton("CoinExplorer", url="https://www.coinexplorer.net/PEP/")],
+        [InlineKeyboardButton("Back", callback_data=f'main_menu_{user_id}')]
+    ]
 
-# Define the buttons for Faucets
-faucets_buttons = [
-    [InlineKeyboardButton("Pepeblocks", url="https://faucet.pepeblocks.com/"), InlineKeyboardButton("Ravener", url="https://pepe.ravener.is-a.dev/"), InlineKeyboardButton("Stakecube", url="https://stakecube.net/app/community")],
-    [InlineKeyboardButton("Back", callback_data='main_menu')]
-]
+# Generate user-specific buttons for Faucets
+def generate_faucets_buttons(user_id):
+    return [
+        [InlineKeyboardButton("Pepeblocks", url="https://faucet.pepeblocks.com/"), InlineKeyboardButton("Ravener", url="https://pepe.ravener.is-a.dev/"), InlineKeyboardButton("Stakecube", url="https://stakecube.net/app/community")],
+        [InlineKeyboardButton("Back", callback_data=f'main_menu_{user_id}')]
+    ]
 
-# Define the buttons for Community
-community_buttons = [
-    [InlineKeyboardButton("Telegram", url="https://t.me/PepecoinGroup"), InlineKeyboardButton("Discord", url="https://discord.gg/pepecoin"), InlineKeyboardButton("Reddit", url="https://reddit.com/r/Pepecoin")],
-    [InlineKeyboardButton("Back", callback_data='main_menu')]
-]
+# Generate user-specific buttons for Community
+def generate_community_buttons(user_id):
+    return [
+        [InlineKeyboardButton("Telegram", url="https://t.me/PepecoinGroup"), InlineKeyboardButton("Discord", url="https://discord.gg/pepecoin"), InlineKeyboardButton("Reddit", url="https://reddit.com/r/Pepecoin")],
+        [InlineKeyboardButton("Back", callback_data=f'main_menu_{user_id}')]
+    ]
 
-# Define the buttons for Guides
-guides_buttons = [
-    [InlineKeyboardButton("Pepelum Guides", url="https://pepelum.site/")],
-    [InlineKeyboardButton("Wallets", url="https://pepelum.site/?p=wallets"), InlineKeyboardButton("Mining", url="https://pepelum.site/?p=mining")],
-    [InlineKeyboardButton("Buying Ᵽepecoin", url="https://pepelum.site/?p=getpepecoin"), InlineKeyboardButton("Tip Bots", url="https://pepelum.site/?p=bots")],
-    [InlineKeyboardButton("Back", callback_data='main_menu')]
-]
+# Generate user-specific buttons for Guides
+def generate_guides_buttons(user_id):
+    return [
+        [InlineKeyboardButton("Pepelum Guides", url="https://pepelum.site/")],
+        [InlineKeyboardButton("Wallets", url="https://pepelum.site/?p=wallets"), InlineKeyboardButton("Mining", url="https://pepelum.site/?p=mining")],
+        [InlineKeyboardButton("Buying Ᵽepecoin", url="https://pepelum.site/?p=getpepecoin"), InlineKeyboardButton("Tip Bots", url="https://pepelum.site/?p=bots")],
+        [InlineKeyboardButton("Back", callback_data=f'main_menu_{user_id}')]
+    ]
 
 # Start command handler
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # Store the ID of the user who started the bot
-    context.user_data['user_id'] = update.message.from_user.id
-    keyboard = InlineKeyboardMarkup(main_buttons)
+    # Get the ID of the user who started the bot
+    user_id = update.message.from_user.id
+
+    # Generate buttons specific to this user
+    keyboard = InlineKeyboardMarkup(generate_main_buttons(user_id))
+    
     await update.message.reply_text('Choose an option:', reply_markup=keyboard)
 
 # Button press handler
@@ -53,31 +61,36 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     user_id = query.from_user.id
 
+    # Extract the button's original user ID from the callback data
+    callback_data = query.data
+    original_user_id = int(callback_data.split('_')[-1])  # Extract the user ID from the callback_data
+
     # Check if the user pressing the button is the same as the one who started the interaction
-    if 'user_id' in context.user_data and user_id != context.user_data['user_id']:
-        # Ignore the button press if it's not the original user
+    if user_id != original_user_id:
+        # Send a feedback message to the user pressing the button
+        await query.answer("You're not allowed to interact with these buttons.", show_alert=True)
         return
-    
+
     await query.answer()
 
     try:
         # Show buttons based on the user's selection
-        if query.data == 'flappy_pepe':
+        if callback_data.startswith('flappy_pepe'):
             await query.message.reply_text('http://t.me/flappypepecoin_bot/flappy_pepe')
-        elif query.data == 'explorers':
-            keyboard = InlineKeyboardMarkup(explorers_buttons)
+        elif callback_data.startswith('explorers'):
+            keyboard = InlineKeyboardMarkup(generate_explorers_buttons(original_user_id))
             await query.message.edit_text('Choose an explorer:', reply_markup=keyboard)
-        elif query.data == 'faucets':
-            keyboard = InlineKeyboardMarkup(faucets_buttons)
+        elif callback_data.startswith('faucets'):
+            keyboard = InlineKeyboardMarkup(generate_faucets_buttons(original_user_id))
             await query.message.edit_text('Choose a faucet:', reply_markup=keyboard)
-        elif query.data == 'community':
-            keyboard = InlineKeyboardMarkup(community_buttons)
+        elif callback_data.startswith('community'):
+            keyboard = InlineKeyboardMarkup(generate_community_buttons(original_user_id))
             await query.message.edit_text('Choose a community platform:', reply_markup=keyboard)
-        elif query.data == 'guides':
-            keyboard = InlineKeyboardMarkup(guides_buttons)
+        elif callback_data.startswith('guides'):
+            keyboard = InlineKeyboardMarkup(generate_guides_buttons(original_user_id))
             await query.message.edit_text('Choose a guide:', reply_markup=keyboard)
-        elif query.data == 'main_menu':
-            keyboard = InlineKeyboardMarkup(main_buttons)
+        elif callback_data.startswith('main_menu'):
+            keyboard = InlineKeyboardMarkup(generate_main_buttons(original_user_id))
             await query.message.edit_text('Choose an option:', reply_markup=keyboard)
         
         # Add a delay to avoid hitting the rate limit
