@@ -43,12 +43,21 @@ guides_buttons = [
 
 # Start command handler
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # Store the ID of the user who started the bot
+    context.user_data['user_id'] = update.message.from_user.id
     keyboard = InlineKeyboardMarkup(main_buttons)
     await update.message.reply_text('Choose an option:', reply_markup=keyboard)
 
 # Button press handler
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
+    user_id = query.from_user.id
+
+    # Check if the user pressing the button is the same as the one who started the interaction
+    if 'user_id' in context.user_data and user_id != context.user_data['user_id']:
+        # Ignore the button press if it's not the original user
+        return
+    
     await query.answer()
 
     try:
