@@ -6,12 +6,12 @@ from telegram.request import HTTPXRequest
 from telegram.error import RetryAfter
 
 # Define the bot token
-TOKEN = 'token'
+TOKEN = ''
 
 # Helper function to generate buttons with user-specific callback data
 def generate_main_buttons(user_id):
     return [
-        [InlineKeyboardButton("Play Flappy PEPE", callback_data=f'flappy_pepe_{user_id}')],
+        [InlineKeyboardButton("Play Flappy PEPE", url="http://t.me/flappypepecoin_bot/flappy_pepe")],
         [InlineKeyboardButton("Pepecoin.org", url="https://pepecoin.org/"), InlineKeyboardButton("Faucets", callback_data=f'faucets_{user_id}')],
         [InlineKeyboardButton("Explorers", callback_data=f'explorers_{user_id}'), InlineKeyboardButton("Community", callback_data=f'community_{user_id}'), InlineKeyboardButton("Guides", callback_data=f'guides_{user_id}')]
     ]
@@ -67,8 +67,10 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # Check if the user pressing the button is the same as the one who started the interaction
     if user_id != original_user_id:
-        # Send a feedback message to the user pressing the button
-        await query.answer("You're not allowed to interact with these buttons.", show_alert=True)
+        # Send the action in a DM to the user pressing the button along with the main buttons
+        keyboard = InlineKeyboardMarkup(generate_main_buttons(user_id))
+        await context.bot.send_message(user_id, text="Choose an option:", reply_markup=keyboard)
+        await query.answer("Your options just flapped their way into your DMs! Check 'em out!", show_alert=True)
         return
 
     await query.answer()
